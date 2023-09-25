@@ -5,6 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Meet Your Mentor interval</title>
 		<meta name="color-scheme" content="only dark" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Open+Sans&display=block&text=0123456789:"
+			rel="stylesheet"
+		/>
 		<style>
 			*,
 			*::before,
@@ -37,11 +41,19 @@
 			.countdown {
 				position: fixed;
 				inset: 0;
-				border: none;
-				width: 100%;
-				height: 100%;
-				filter: invert(100%);
-				color-scheme: light;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				font-variant-numeric: tabular-nums;
+				font-family: 'Open Sans', sans-serif;
+				font-size: 1em;
+				font-size: 20vw;
+			}
+
+			@media (min-aspect-ratio: 12/5) {
+				.countdown {
+					font-size: 48vh;
+				}
 			}
 			.form ~ .countdown {
 				display: none;
@@ -84,7 +96,7 @@
 				<button type="submit">Spustit</button>
 			</form>
 		</div>
-		<iframe class="countdown" src=""></iframe>
+		<div class="countdown"></div>
 		<div class="rounds"></div>
 		<img class="logo" src="logo-white.png" width="1920" height="560" />
 		<script type="module">
@@ -94,44 +106,44 @@
 			const alert = document.querySelector('.alert')
 			const rounds = document.querySelector('.rounds')
 			const countdown = document.querySelector('.countdown')
-			const run = () => {
+			const run = async () => {
 				rounds.textContent = `Kolo: ${roundsCount}`
-				countdown.src = ''
-				countdown.src = `https://just-countdown.eu/run?seconds=${
-					minutesInterval * 60
-				}`
-				let started = false
+				let secondsRemaining = 0
+				const startTime = new Date()
+
 				let warningReached = false
 				let alertReached = false
-				let endReached = false
-				const onChange = (event) => {
-					if (
-						event.origin === 'https://just-countdown.eu' &&
-						typeof event.data.formattedTime === 'string' &&
-						(event.data.remainingTimeInSeconds !== 0 || started)
-					) {
-						started = true
-						if (event.data.remainingTimeInSeconds <= 5 && !warningReached) {
-							warningReached = true
-							warning.play()
-						}
-						if (event.data.remainingTimeInSeconds <= 2 && !alertReached) {
-							alertReached = true
-							alert.play()
-						}
-						if (event.data.remainingTimeInSeconds === 0 && !endReached) {
-							window.removeEventListener('message', onChange)
-							roundsCount++
-							run()
-						}
+				while (true) {
+					await new Promise((resolve) => setTimeout(resolve, 50))
+					secondsRemaining =
+						minutesInterval * 60 - Math.ceil((new Date() - startTime) / 1000)
+
+					const secondsRemainingLimited = Math.max(0, secondsRemaining)
+					countdown.textContent = `${Math.floor(secondsRemainingLimited / 60)
+						.toString()
+						.padStart(2, '0')}:${(secondsRemainingLimited % 60)
+						.toString()
+						.padStart(2, '0')}`
+					if (secondsRemaining <= 5 && !warningReached) {
+						warningReached = true
+						warning.play()
+					}
+					if (secondsRemaining <= 2 && !alertReached) {
+						alertReached = true
+						alert.play()
+					}
+					if (secondsRemaining < 0) {
+						break
 					}
 				}
-				window.addEventListener('message', onChange)
+
+				roundsCount++
+				run()
 			}
 			const form = document.querySelector('.form')
 			form.querySelector('form').addEventListener('submit', (event) => {
 				event.preventDefault()
-				minutesInterval = form.querySelector('input').valueAsNumber
+				minutesInterval = form.querySelector('input').valueAsNumber / 60
 				run()
 				form.remove()
 			})
