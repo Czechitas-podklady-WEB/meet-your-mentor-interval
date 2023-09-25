@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="cs">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Meet your mentor interval</title>
+		<meta name="color-scheme" content="dark" />
+		<style>
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+			}
+			body {
+				font-family: sans-serif;
+				min-height: 100svh;
+				max-width: 40rem;
+				margin: 0 auto;
+				padding: 1rem;
+				display: grid;
+				align-items: center;
+				text-align: center;
+			}
+			form {
+				font-size: 1.2rem;
+			}
+			input,
+			button {
+				font-size: inherit;
+			}
+			input[type='number'] {
+				width: 4rem;
+				text-align: center;
+			}
+			.countdown {
+				position: fixed;
+				inset: 0;
+				border: none;
+				width: 100%;
+				height: 100%;
+				filter: invert(100%);
+			}
+			.form ~ .countdown {
+				display: none;
+			}
+			.rounds {
+				position: fixed;
+				inset: auto 0 0;
+				font-size: 2rem;
+				padding: 1em;
+			}
+			.logo {
+				position: fixed;
+				inset: 2rem 2rem auto auto;
+				width: 10%;
+				height: auto;
+			}
+		</style>
+	</head>
+	<body>
+		<audio class="warning" preload="auto">
+			<source src="sounds/warning.mp3" />
+		</audio>
+		<audio class="alert" preload="auto">
+			<source src="sounds/alert.mp3" />
+		</audio>
+		<div class="form">
+			<h1>Meet your mentor interval</h1>
+			<form>
+				<label
+					>Interval v minutách:
+					<input
+						type="number"
+						name="interval"
+						value="7"
+						min="1"
+						step="1"
+						required
+					/>
+				</label>
+				<button type="submit">Spustit</button>
+			</form>
+		</div>
+		<iframe class="countdown" src=""></iframe>
+		<div class="rounds"></div>
+		<img class="logo" src="logo-white.png" width="1920" height="560" />
+		<script type="module">
+			let minutesInterval = 1
+			let roundsCount = 1
+			const warning = document.querySelector('.warning')
+			const alert = document.querySelector('.alert')
+			const rounds = document.querySelector('.rounds')
+			const countdown = document.querySelector('.countdown')
+			const run = () => {
+				rounds.textContent = `Kolo: ${roundsCount}`
+				countdown.src = ''
+				countdown.src = `https://just-countdown.eu/run?seconds=${
+					minutesInterval * 60
+				}`
+				let started = false
+				let warningReached = false
+				let alertReached = false
+				let endReached = false
+				const onChange = (event) => {
+					if (
+						event.origin === 'https://just-countdown.eu' &&
+						typeof event.data.formattedTime === 'string' &&
+						(event.data.remainingTimeInSeconds !== 0 || started)
+					) {
+						started = true
+						if (event.data.remainingTimeInSeconds <= 5 && !warningReached) {
+							warningReached = true
+							warning.play()
+						}
+						if (event.data.remainingTimeInSeconds <= 2 && !alertReached) {
+							alertReached = true
+							alert.play()
+						}
+						if (event.data.remainingTimeInSeconds === 0 && !endReached) {
+							window.removeEventListener('message', onChange)
+							roundsCount++
+							run()
+						}
+					}
+				}
+				window.addEventListener('message', onChange)
+			}
+			const form = document.querySelector('.form')
+			form.querySelector('form').addEventListener('submit', (event) => {
+				event.preventDefault()
+				minutesInterval = form.querySelector('input').valueAsNumber
+				run()
+				form.remove()
+			})
+		</script>
+	</body>
+</html>
