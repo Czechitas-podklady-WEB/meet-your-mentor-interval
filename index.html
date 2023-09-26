@@ -73,12 +73,6 @@
 		</style>
 	</head>
 	<body>
-		<audio class="warning" preload="auto">
-			<source src="sounds/warning.mp3" />
-		</audio>
-		<audio class="alert" preload="auto">
-			<source src="sounds/alert.mp3" />
-		</audio>
 		<div class="form">
 			<h1>Meet Your Mentor interval</h1>
 			<form>
@@ -102,8 +96,19 @@
 		<script type="module">
 			let minutesInterval = 1
 			let roundsCount = 1
-			const warning = document.querySelector('.warning')
-			const alert = document.querySelector('.alert')
+
+			const canPlay = async (audio) => {
+				await new Promise((resolve) => {
+					audio.addEventListener('canplaythrough', () => {
+						resolve()
+					})
+				})
+			}
+			const warning = new Audio('sounds/warning.mp3')
+			const alert = new Audio('sounds/alert.mp3')
+			const warningCanPlay = canPlay(warning)
+			const alertCanPlay = canPlay(alert)
+
 			const rounds = document.querySelector('.rounds')
 			const countdown = document.querySelector('.countdown')
 			const run = async () => {
@@ -141,11 +146,14 @@
 				run()
 			}
 			const form = document.querySelector('.form')
-			form.querySelector('form').addEventListener('submit', (event) => {
+			form.querySelector('form').addEventListener('submit', async (event) => {
 				event.preventDefault()
-				minutesInterval = form.querySelector('input').valueAsNumber
-				run()
+				minutesInterval = form.querySelector('input').valueAsNumber / 60
 				form.remove()
+
+				await warningCanPlay
+				await alertCanPlay
+				run()
 			})
 		</script>
 	</body>
