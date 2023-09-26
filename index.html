@@ -148,7 +148,7 @@
 			const form = document.querySelector('.form')
 			form.querySelector('form').addEventListener('submit', async (event) => {
 				event.preventDefault()
-				minutesInterval = form.querySelector('input').valueAsNumber / 60
+				minutesInterval = form.querySelector('input').valueAsNumber
 				form.remove()
 
 				await warningCanPlay
