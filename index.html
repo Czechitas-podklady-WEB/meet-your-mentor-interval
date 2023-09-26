@@ -151,8 +151,10 @@
 				minutesInterval = form.querySelector('input').valueAsNumber
 				form.remove()
 
-				await warningCanPlay
-				await alertCanPlay
+				await Promise.race([
+					Promise.all([warningCanPlay, alertCanPlay]),
+					new Promise((resolve) => setTimeout(resolve, 3000)),
+				])
 				run()
 			})
 		</script>
